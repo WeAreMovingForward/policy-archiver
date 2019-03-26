@@ -1,5 +1,6 @@
 const fs = require('fs-extra')
 const puppeteer = require('puppeteer')
+const Mercury = require('@postlight/mercury-parser')
 
 module.exports = class HTMLPolicyLoader {
   static async start () {
@@ -15,17 +16,30 @@ module.exports = class HTMLPolicyLoader {
       const page = await this.browser.newPage()
       await page.goto(url, { waitUntil: 'networkidle2' })
 
-      // Save as plain text
-      const innerText = await page.evaluate(() => {
-        // GABE: hack for first round's js visiblity stuff
-        if (document.getElementById('1164')) {
-          document.getElementById('1164').style.visibility = 'visible'
-        }
+      // Scroll down google docs pages
+      let pages = await page.$$(`.kix-page`)
+      for (const page of pages) {
+        await page.hover()
+      }
 
-        return document.body.innerText
+      // Get HTML after running javascript
+      const renderedHTML = await page.evaluate(async () => {
+        window.scrollTo(0, document.body.scrollHeight)
+
+        return {
+          text: document.body.innerText,
+          bodyHTML: document.body.innerHTML
+        }
       })
 
-      fs.outputFileSync(`${path}.txt`, innerText)
+      // Parse HTML into markdown
+      let markdown = await Mercury.parse(url, {
+        html: renderedHTML.bodyHTML,
+        contentType: 'markdown'
+      })
+
+      fs.outputFileSync(`${path}.md`, markdown.content)
+      fs.outputFileSync(`${path}.txt`, renderedHTML.text)
 
       // Save as a PDF
       await page.pdf({ path: `${path}.pdf` })

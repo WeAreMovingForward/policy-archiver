@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/gshahbazian/movingforward-archiver#readme",
   "dependencies": {
+    "@postlight/mercury-parser": "^2.0.0",
     "airtable": "^0.5.9",
     "axios": "^0.18.0",
     "csv": "^5.1.1",
