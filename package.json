@@ -4,7 +4,8 @@
   "description": "moving forward archiver",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "upload": "node upload.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
     "dotenv": "^7.0.0",
     "fs-extra": "^7.0.1",
     "pdfjs-dist": "^2.0.943",
-    "puppeteer": "^1.13.0"
+    "puppeteer": "^1.13.0",
+    "simple-git": "^1.110.0"
   }
 }

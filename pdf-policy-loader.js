@@ -17,6 +17,8 @@ module.exports = class PDFPolicyLoader {
         textContent.items.forEach((item) => {
           strings.push(item.str)
         })
+
+        strings.push('\n\n')
       }
 
       fs.outputFileSync(`${path}.txt`, strings.join(''))
