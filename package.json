@@ -19,13 +19,13 @@
   "homepage": "https://github.com/gshahbazian/movingforward-archiver#readme",
   "dependencies": {
     "@postlight/mercury-parser": "^2.0.0",
-    "airtable": "^0.5.9",
+    "airtable": "^0.5.10",
     "axios": "^0.18.0",
     "csv": "^5.1.1",
     "dotenv": "^7.0.0",
     "fs-extra": "^7.0.1",
     "pdfjs-dist": "^2.0.943",
-    "puppeteer": "^1.13.0",
+    "puppeteer": "^1.14.0",
     "simple-git": "^1.110.0"
   }
 }
