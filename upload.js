@@ -1,54 +1,79 @@
+require('dotenv').config()
 const fs = require('fs-extra')
-const git = require('simple-git/promise')
+const Octokit = require('@octokit/rest')
 
-async function moveFiles (from, to) {
-  const files = await fs.readdir(from)
-  for (let file of files) {
-    console.log(`Moving file`, file)
-    fs.copyFileSync(`${from}/${file}`, `${to}/${file}`)
-  }
-}
+const DESTINATION_REPO_OWNER = 'gshahbazian'
+const DESTINATION_REPO_NAME = 'movingforward-archive'
 
-async function cleanDestDirectory (to) {
-  const files = await fs.readdir(to)
-  for (let file of files) {
-    const stat = await fs.stat(`${to}/${file}`)
-    if (stat.isFile()) {
-      fs.removeSync(`${to}/${file}`)
-    }
-  }
+function base64File (file) {
+  const bitmap = fs.readFileSync(file)
+  return Buffer.from(bitmap).toString('base64')
 }
 
 async function main () {
-  const repoDir = process.argv.slice(2)[0]
-  await fs.ensureDir(repoDir)
-  await fs.ensureDir('./out')
+  const octokit = new Octokit({
+    auth: process.env.GITHUB_API_TOKEN
+  })
 
-  const repo = git(repoDir)
-  try {
-    await repo.fetch('origin', 'master')
-    await repo.reset('hard')
-    await repo.pull()
-  } catch (err) {
+  const archiveRepo = await octokit.repos.getBranch({
+    owner: DESTINATION_REPO_OWNER,
+    repo: DESTINATION_REPO_NAME,
+    branch: 'master'
+  })
+  const masterSha = archiveRepo.data.commit.sha
+
+  let treeFiles = []
+
+  const files = await fs.readdir('./out')
+  for (let file of files) {
+    if (file === '.DS_Store') { continue }
+
+    let filePath = `./out/${file}`
+    console.log(`Uploading file`, filePath)
+
+    const blob = await octokit.git.createBlob({
+      owner: DESTINATION_REPO_OWNER,
+      repo: DESTINATION_REPO_NAME,
+      content: base64File(filePath),
+      encoding: 'base64'
+    })
+
+    treeFiles.push({
+      path: file,
+      mode: '100644',
+      sha: blob.data.sha
+    })
   }
 
-  await cleanDestDirectory(repoDir)
-  await moveFiles('./out', repoDir)
+  if (!treeFiles.length) {
+    console.log(`No files found`)
+    return
+  }
+
+  const tree = await octokit.git.createTree({
+    owner: DESTINATION_REPO_OWNER,
+    repo: DESTINATION_REPO_NAME,
+    tree: treeFiles
+  })
 
   const now = new Date()
-  await repo.commit(`Policies exported on ${now.toDateString()}`, '.')
-  await repo.push()
+  const commit = await octokit.git.createCommit({
+    owner: DESTINATION_REPO_OWNER,
+    repo: DESTINATION_REPO_NAME,
+    message: `Policies exported on ${now.toDateString()}`,
+    tree: tree.data.sha,
+    author: { name: 'WeAreMovingForward', email: 'hello@venturemovingforward.org' },
+    parents: [masterSha]
+  })
 
-  const remotes = await repo.remote(['show', 'origin'])
+  const ref = await octokit.git.updateRef({
+    owner: DESTINATION_REPO_OWNER,
+    repo: DESTINATION_REPO_NAME,
+    ref: 'heads/master',
+    sha: commit.data.sha
+  })
 
-  let commitURL = ''
-  const urlMatches = /Push\s*URL:\s(http.*).git$/gm.exec(remotes).slice(1)
-  if (urlMatches.length) {
-    const hash = (await repo.log()).latest.hash
-    commitURL = `${urlMatches[0]}/commit/${hash}`
-  }
-
-  console.log(`Uploaded:`, commitURL)
+  console.log(`Published to:`, `https://github.com/${DESTINATION_REPO_OWNER}/${DESTINATION_REPO_NAME}/commit/${ref.data.object.sha}`)
 }
 
 main()
