@@ -18,14 +18,14 @@
   },
   "homepage": "https://github.com/gshahbazian/movingforward-archiver#readme",
   "dependencies": {
-    "@octokit/rest": "^16.25.0",
-    "@postlight/mercury-parser": "^2.1.0",
-    "airtable": "^0.5.10",
-    "axios": "^0.18.0",
+    "@octokit/rest": "^16.28.3",
+    "@postlight/mercury-parser": "^2.1.1",
+    "airtable": "^0.6.0",
+    "axios": "^0.19.0",
     "csv": "^5.1.1",
-    "dotenv": "^7.0.0",
-    "fs-extra": "^7.0.1",
-    "pdfjs-dist": "^2.0.943",
-    "puppeteer": "^1.14.0"
+    "dotenv": "^8.0.0",
+    "fs-extra": "^8.1.0",
+    "pdfjs-dist": "^2.1.266",
+    "puppeteer": "^1.18.1"
   }
 }
