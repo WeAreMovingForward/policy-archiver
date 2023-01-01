@@ -25,7 +25,7 @@
     "csv": "^5.1.2",
     "dotenv": "^8.0.0",
     "fs-extra": "^8.1.0",
-    "pdfjs-dist": "^2.1.266",
+    "pdfjs-dist": "^2.16.105",
     "puppeteer": "^1.19.0"
   }
 }
